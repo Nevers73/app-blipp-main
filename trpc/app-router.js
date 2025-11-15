@@ -1,3 +1,5 @@
+// trpc/app-router.js
+
 import { createTRPCRouter } from "./create-context";
 import hiRoute from "./routes/example/hi/route";
 import { listCouleurs } from "./routes/couleurs/list/route";
@@ -44,5 +46,3 @@ export const appRouter = createTRPCRouter({
     uploadCSV,
   }),
 });
-
-export type AppRouter = typeof appRouter;

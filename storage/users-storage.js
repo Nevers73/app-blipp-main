@@ -1,11 +1,12 @@
-import { Utilisateur } from "@/types";
+// storage/users-storage.js
 
 class UsersStorage {
-  private users: Map<string, Utilisateur> = new Map();
-  private emailToId: Map<string, string> = new Map();
-
   constructor() {
-    const adminUser: Utilisateur = {
+    this.users = new Map();
+    this.emailToId = new Map();
+
+    // Crée un admin par défaut
+    const adminUser = {
       id: "admin-1",
       nom: "Admin",
       email: "admin@blipp.com",
@@ -13,20 +14,21 @@ class UsersStorage {
       role: "admin",
       favoris: [],
     };
+
     this.users.set(adminUser.id, adminUser);
     this.emailToId.set(adminUser.email, adminUser.id);
   }
 
-  getById(id: string): Utilisateur | undefined {
+  getById(id) {
     return this.users.get(id);
   }
 
-  getByEmail(email: string): Utilisateur | undefined {
+  getByEmail(email) {
     const id = this.emailToId.get(email);
     return id ? this.users.get(id) : undefined;
   }
 
-  create(user: Utilisateur): Utilisateur {
+  create(user) {
     if (this.emailToId.has(user.email)) {
       throw new Error("Email already exists");
     }
@@ -36,14 +38,14 @@ class UsersStorage {
     return user;
   }
 
-  update(id: string, updates: Partial<Utilisateur>): Utilisateur {
+  update(id, updates) {
     const user = this.users.get(id);
     if (!user) {
       throw new Error("User not found");
     }
 
     const updatedUser = { ...user, ...updates, id };
-    
+
     if (updates.email && updates.email !== user.email) {
       this.emailToId.delete(user.email);
       this.emailToId.set(updates.email, id);
@@ -54,7 +56,7 @@ class UsersStorage {
     return updatedUser;
   }
 
-  delete(id: string): void {
+  delete(id) {
     const user = this.users.get(id);
     if (user) {
       this.emailToId.delete(user.email);
@@ -63,7 +65,7 @@ class UsersStorage {
     }
   }
 
-  addFavori(userId: string, couleurId: string): Utilisateur {
+  addFavori(userId, couleurId) {
     const user = this.users.get(userId);
     if (!user) {
       throw new Error("User not found");
@@ -77,7 +79,7 @@ class UsersStorage {
     return user;
   }
 
-  removeFavori(userId: string, couleurId: string): Utilisateur {
+  removeFavori(userId, couleurId) {
     const user = this.users.get(userId);
     if (!user) {
       throw new Error("User not found");

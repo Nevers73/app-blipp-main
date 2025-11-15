@@ -1,17 +1,20 @@
+// trpc/routes/admin/upload-csv/route.js
+
 import { adminProcedure } from "../../../create-context";
 import { couleursStorage } from "../../../../storage/couleurs-storage";
-import { Couleur } from "../../../../../types";
 import { z } from "zod";
 
-function detectSeparator(line: string): string {
-  const separators = ['\t', ';', ','];
-  const counts = separators.map(sep => line.split(sep).length - 1);
+// Détecte le séparateur dans le CSV
+function detectSeparator(line) {
+  const separators = ["\t", ";", ","];
+  const counts = separators.map((sep) => line.split(sep).length - 1);
   const maxIndex = counts.indexOf(Math.max(...counts));
   return separators[maxIndex];
 }
 
-function parseCSVLine(line: string, separator: string): string[] {
-  const result: string[] = [];
+// Parse une ligne CSV en tenant compte des guillemets
+function parseCSVLine(line, separator) {
+  const result = [];
   let current = "";
   let inQuotes = false;
 
@@ -30,7 +33,8 @@ function parseCSVLine(line: string, separator: string): string[] {
   return result;
 }
 
-function categorizeColor(L: number, A: number, B: number): string {
+// Catégorise la couleur selon L, A, B
+function categorizeColor(L, A, B) {
   if (A > 40 && B > 20) return "Rouge";
   if (A > 30 && B < 10) return "Rose";
   if (A > 20 && B < -5) return "Rose";
@@ -41,18 +45,19 @@ function categorizeColor(L: number, A: number, B: number): string {
   return "Rose";
 }
 
-function generateColorName(gouttes: any): string {
-  const activeGouttes: string[] = [];
-  const gouttesLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'];
-  
-  gouttesLetters.forEach((letter, index) => {
-    const key = `gouttes${letter}` as keyof typeof gouttes;
+// Génère un nom à partir des gouttes
+function generateColorName(gouttes) {
+  const activeGouttes = [];
+  const gouttesLetters = ["A", "B", "C", "D", "E", "F", "G", "H", "I"];
+
+  gouttesLetters.forEach((letter) => {
+    const key = `gouttes${letter}`;
     const qty = gouttes[key];
     if (qty > 0) {
       activeGouttes.push(`${qty}${letter}`);
     }
   });
-  
+
   return activeGouttes.join("+") || "Teinte";
 }
 
@@ -67,33 +72,51 @@ export const uploadCSV = adminProcedure
 
     try {
       const lines = input.csvContent.trim().split("\n");
-      
+
       if (lines.length < 2) {
         throw new Error("Le fichier CSV est vide ou invalide");
       }
 
       const separator = detectSeparator(lines[0]);
-      console.log("[tRPC] Detected separator:", separator === '\t' ? 'TAB' : separator);
-      
+      console.log(
+        "[tRPC] Detected separator:",
+        separator === "\t" ? "TAB" : separator
+      );
+
       const headers = parseCSVLine(lines[0], separator);
       console.log("[tRPC] CSV Headers:", headers);
-      
-      const requiredHeaders = ["Gouttes A", "Gouttes B", "Gouttes C", "Gouttes D", "Gouttes E", "Gouttes F", "Gouttes G", "Gouttes H", "Gouttes I", "Volume (cc)", "L", "A", "B", "Couleur HEX"];
+
+      const requiredHeaders = [
+        "Gouttes A",
+        "Gouttes B",
+        "Gouttes C",
+        "Gouttes D",
+        "Gouttes E",
+        "Gouttes F",
+        "Gouttes G",
+        "Gouttes H",
+        "Gouttes I",
+        "Volume (cc)",
+        "L",
+        "A",
+        "B",
+        "Couleur HEX",
+      ];
       const missingHeaders = requiredHeaders.filter((h) => !headers.includes(h));
-      
+
       if (missingHeaders.length > 0) {
         throw new Error(`Colonnes manquantes: ${missingHeaders.join(", ")}`);
       }
 
-      const couleurs: Couleur[] = [];
+      const couleurs = [];
 
       for (let i = 1; i < lines.length; i++) {
         const line = lines[i].trim();
         if (!line) continue;
 
         const values = parseCSVLine(line, separator);
-        
-        const rowData: Record<string, string> = {};
+
+        const rowData = {};
         headers.forEach((header, idx) => {
           rowData[header] = values[idx] || "";
         });
@@ -112,16 +135,28 @@ export const uploadCSV = adminProcedure
         const A = parseFloat(rowData["A"]) || 0;
         const B = parseFloat(rowData["B"]) || 0;
         let hex = rowData["Couleur HEX"] || "#000000";
-        
+
         if (!hex.startsWith("#")) {
           hex = `#${hex}`;
         }
 
         const categorie = categorizeColor(L, A, B);
-        const nom = generateColorName({ gouttesA, gouttesB, gouttesC, gouttesD, gouttesE, gouttesF, gouttesG, gouttesH, gouttesI });
+        const nom = generateColorName({
+          gouttesA,
+          gouttesB,
+          gouttesC,
+          gouttesD,
+          gouttesE,
+          gouttesF,
+          gouttesG,
+          gouttesH,
+          gouttesI,
+        });
 
         couleurs.push({
-          id: `couleur_${Date.now()}_${i}_${Math.random().toString(36).substring(2, 9)}`,
+          id: `couleur_${Date.now()}_${i}_${Math.random()
+            .toString(36)
+            .substring(2, 9)}`,
           numero: i,
           gouttesA,
           gouttesB,
@@ -153,6 +188,10 @@ export const uploadCSV = adminProcedure
       };
     } catch (error) {
       console.error("[tRPC] Erreur upload CSV:", error);
-      throw new Error(`Échec du traitement CSV: ${error instanceof Error ? error.message : "Erreur inconnue"}`);
+      throw new Error(
+        `Échec du traitement CSV: ${
+          error instanceof Error ? error.message : "Erreur inconnue"
+        }`
+      );
     }
   });

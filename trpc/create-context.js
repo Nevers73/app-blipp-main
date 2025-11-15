@@ -1,11 +1,12 @@
-import { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
+// create-context.js
+
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
-import { sessionsStorage } from "@/backend/storage/sessions-storage";
-import { usersStorage } from "@/backend/storage/users-storage";
-import { Utilisateur } from "@/types";
+import { sessionsStorage } from "../storage/sessions-storage.js";
+import { usersStorage } from "../storage/users-storage.js";
 
-export const createContext = async (opts: FetchCreateContextFnOptions) => {
+// Crée le contexte pour TRPC
+export const createContext = async (opts) => {
   const sessionId = opts.req.headers.get("x-session-id") || "";
   const userId = sessionId ? sessionsStorage.getUserId(sessionId) : undefined;
   const user = userId ? usersStorage.getById(userId) : undefined;
@@ -18,12 +19,11 @@ export const createContext = async (opts: FetchCreateContextFnOptions) => {
   };
 };
 
-export type Context = Awaited<ReturnType<typeof createContext>>;
-
-const t = initTRPC.context<Context>().create({
+const t = initTRPC.context().create({
   transformer: superjson,
 });
 
+// Middleware pour utilisateur authentifié
 const isAuthenticated = t.middleware(({ ctx, next }) => {
   if (!ctx.user || !ctx.userId) {
     throw new TRPCError({ code: "UNAUTHORIZED", message: "Not authenticated" });
@@ -31,12 +31,13 @@ const isAuthenticated = t.middleware(({ ctx, next }) => {
   return next({
     ctx: {
       ...ctx,
-      user: ctx.user as Utilisateur,
+      user: ctx.user,
       userId: ctx.userId,
     },
   });
 });
 
+// Middleware pour admin
 const isAdmin = t.middleware(({ ctx, next }) => {
   if (!ctx.user || !ctx.userId) {
     throw new TRPCError({ code: "UNAUTHORIZED", message: "Not authenticated" });
@@ -47,12 +48,13 @@ const isAdmin = t.middleware(({ ctx, next }) => {
   return next({
     ctx: {
       ...ctx,
-      user: ctx.user as Utilisateur,
+      user: ctx.user,
       userId: ctx.userId,
     },
   });
 });
 
+// Export TRPC
 export const createTRPCRouter = t.router;
 export const publicProcedure = t.procedure;
 export const protectedProcedure = t.procedure.use(isAuthenticated);
