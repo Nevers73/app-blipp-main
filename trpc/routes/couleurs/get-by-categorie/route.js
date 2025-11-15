@@ -1,5 +1,3 @@
-// trpc/routes/couleurs/get-by-categorie/route.js
-
 import { publicProcedure } from "../../../create-context.js";
 import { couleursStorage } from "../../../../storage/couleurs-storage.js";
 import { z } from "zod";

@@ -28,6 +28,7 @@ const isAuthenticated = t.middleware(({ ctx, next }) => {
   if (!ctx.user || !ctx.userId) {
     throw new TRPCError({ code: "UNAUTHORIZED", message: "Not authenticated" });
   }
+
   return next({
     ctx: {
       ...ctx,
@@ -42,9 +43,14 @@ const isAdmin = t.middleware(({ ctx, next }) => {
   if (!ctx.user || !ctx.userId) {
     throw new TRPCError({ code: "UNAUTHORIZED", message: "Not authenticated" });
   }
+
   if (ctx.user.role !== "admin") {
-    throw new TRPCError({ code: "FORBIDDEN", message: "Admin access required" });
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "Admin access required",
+    });
   }
+
   return next({
     ctx: {
       ...ctx,
@@ -54,7 +60,7 @@ const isAdmin = t.middleware(({ ctx, next }) => {
   });
 });
 
-// Export TRPC
+// Export TRPC helpers
 export const createTRPCRouter = t.router;
 export const publicProcedure = t.procedure;
 export const protectedProcedure = t.procedure.use(isAuthenticated);

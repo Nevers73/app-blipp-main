@@ -1,5 +1,3 @@
-// trpc/routes/auth/register/route.js
-
 import { publicProcedure } from "../../../create-context.js";
 import { usersStorage } from "../../../../storage/users-storage.js";
 import { sessionsStorage } from "../../../../storage/sessions-storage.js";

@@ -1,14 +1,12 @@
-// trpc/routes/example/hi/route.js
-
-import { z } from "zod";
 import { publicProcedure } from "../../../create-context.js";
+import { couleursStorage } from "../../../../storage/couleurs-storage.js";
+import { z } from "zod";
 
-export const hiRoute = publicProcedure
-  .input(z.object({ name: z.string() }))
-  .mutation(({ input }) => {
-    console.log(`[tRPC] hiRoute called with name: ${input.name}`);
-    return {
-      hello: input.name,
-      date: new Date(),
-    };
+export const searchCouleurs = publicProcedure
+  .input(z.object({ query: z.string() }))
+  .query(async ({ input }) => {
+    await couleursStorage.initialize();
+    console.log(`[tRPC] Searching couleurs with query: ${input.query}`);
+    const couleurs = couleursStorage.search(input.query);
+    return { couleurs };
   });

@@ -50,7 +50,7 @@ function generateColorName(gouttes) {
 
   gouttesLetters.forEach((letter) => {
     const key = `gouttes${letter}`;
-    const qty = gouttes[key];
+    const qty = gouttes[key] || 0;
     if (qty > 0) {
       activeGouttes.push(`${qty}${letter}`);
     }
