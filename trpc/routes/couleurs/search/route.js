@@ -1,5 +1,7 @@
-import { publicProcedure } from "@/backend/trpc/create-context";
-import { couleursStorage } from "@/backend/storage/couleurs-storage";
+// trpc/routes/couleurs/search/route.js
+
+import { publicProcedure } from "../../../create-context.js";
+import { couleursStorage } from "../../../../storage/couleurs-storage.js";
 import { z } from "zod";
 
 export const searchCouleurs = publicProcedure

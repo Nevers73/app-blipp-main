@@ -1,5 +1,7 @@
-import { publicProcedure } from "@/backend/trpc/create-context";
-import { couleursStorage } from "@/backend/storage/couleurs-storage";
+// trpc/routes/couleurs/find-by-closest/route.js
+
+import { publicProcedure } from "../../../create-context.js";
+import { couleursStorage } from "../../../../storage/couleurs-storage.js";
 import { z } from "zod";
 
 export const findClosestCouleur = publicProcedure
@@ -8,10 +10,10 @@ export const findClosestCouleur = publicProcedure
     await couleursStorage.initialize();
     console.log(`[tRPC] Finding closest couleur to hex: ${input.hex}`);
     const couleur = couleursStorage.findClosestByHex(input.hex);
-    
+
     if (!couleur) {
       throw new Error("No couleurs available");
     }
-    
+
     return { couleur };
   });

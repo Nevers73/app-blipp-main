@@ -1,5 +1,7 @@
-import { publicProcedure } from "@/backend/trpc/create-context";
-import { couleursStorage } from "@/backend/storage/couleurs-storage";
+// trpc/routes/couleurs/get-by-id/route.js
+
+import { publicProcedure } from "../../../create-context.js";
+import { couleursStorage } from "../../../../storage/couleurs-storage.js";
 import { z } from "zod";
 
 export const getCouleurById = publicProcedure
@@ -8,10 +10,10 @@ export const getCouleurById = publicProcedure
     await couleursStorage.initialize();
     console.log(`[tRPC] Fetching couleur by id: ${input.id}`);
     const couleur = couleursStorage.getById(input.id);
-    
+
     if (!couleur) {
       throw new Error(`Couleur with id ${input.id} not found`);
     }
-    
+
     return { couleur };
   });

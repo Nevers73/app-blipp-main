@@ -1,7 +1,7 @@
 // trpc/routes/admin/upload-csv/route.js
 
-import { adminProcedure } from "../../../create-context";
-import { couleursStorage } from "../../../../storage/couleurs-storage";
+import { adminProcedure } from "../../../create-context.js";
+import { couleursStorage } from "../../../../storage/couleurs-storage.js";
 import { z } from "zod";
 
 // Détecte le séparateur dans le CSV

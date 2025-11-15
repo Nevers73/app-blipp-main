@@ -1,5 +1,7 @@
-import { protectedProcedure } from "@/backend/trpc/create-context";
-import { sessionsStorage } from "@/backend/storage/sessions-storage";
+// trpc/routes/auth/logout/route.js
+
+import { protectedProcedure } from "../../../create-context.js";
+import { sessionsStorage } from "../../../../storage/sessions-storage.js";
 
 export const logout = protectedProcedure.mutation(({ ctx }) => {
   console.log(`[tRPC] Logout user: ${ctx.userId}`);

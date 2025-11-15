@@ -6,13 +6,13 @@ import { sessionsStorage } from "../storage/sessions-storage.js";
 import { usersStorage } from "../storage/users-storage.js";
 
 // Crée le contexte pour TRPC
-export const createContext = async (opts) => {
-  const sessionId = opts.req.headers.get("x-session-id") || "";
+export const createContext = async ({ req }) => {
+  const sessionId = req.headers.get("x-session-id") || "";
   const userId = sessionId ? sessionsStorage.getUserId(sessionId) : undefined;
   const user = userId ? usersStorage.getById(userId) : undefined;
 
   return {
-    req: opts.req,
+    req,
     sessionId,
     userId,
     user,

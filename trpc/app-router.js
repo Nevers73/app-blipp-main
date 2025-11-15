@@ -18,7 +18,6 @@ import { removeFavori } from "./routes/favoris/remove/route.js";
 import { listFavoris } from "./routes/favoris/list/route.js";
 import { uploadCSV } from "./routes/admin/upload-csv/route.js";
 
-
 export const appRouter = createTRPCRouter({
   example: createTRPCRouter({
     hi: hiRoute,

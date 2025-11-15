@@ -1,6 +1,8 @@
-import { publicProcedure } from "@/backend/trpc/create-context";
-import { usersStorage } from "@/backend/storage/users-storage";
-import { sessionsStorage } from "@/backend/storage/sessions-storage";
+// trpc/routes/auth/register/route.js
+
+import { publicProcedure } from "../../../create-context.js";
+import { usersStorage } from "../../../../storage/users-storage.js";
+import { sessionsStorage } from "../../../../storage/sessions-storage.js";
 import { z } from "zod";
 
 export const register = publicProcedure
