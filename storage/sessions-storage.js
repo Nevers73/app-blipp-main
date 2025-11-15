@@ -1,5 +1,3 @@
-// storage/sessions-storage.js
-
 class SessionsStorage {
   constructor() {
     this.sessions = new Map();

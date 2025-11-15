@@ -1,5 +1,3 @@
-// storage/users-storage.js
-
 class UsersStorage {
   constructor() {
     this.users = new Map();

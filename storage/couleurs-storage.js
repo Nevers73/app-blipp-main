@@ -1,5 +1,3 @@
-// storage/couleurs-storage.js
-
 import { couleursMock } from "../data/couleurs.js";
 import path from "path";
 import { promises as fs } from "fs";

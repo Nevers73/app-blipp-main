@@ -1,5 +1,3 @@
-// trpc/routes/admin/upload-csv/route.js
-
 import { adminProcedure } from "../../../create-context.js";
 import { couleursStorage } from "../../../../storage/couleurs-storage.js";
 import { z } from "zod";
