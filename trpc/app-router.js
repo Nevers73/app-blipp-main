@@ -1,22 +1,23 @@
 // trpc/app-router.js
 
-import { createTRPCRouter } from "./create-context";
-import hiRoute from "./routes/example/hi/route";
-import { listCouleurs } from "./routes/couleurs/list/route";
-import { getCouleurById } from "./routes/couleurs/get-by-id/route";
-import { getCouleursByCategorie } from "./routes/couleurs/get-by-categorie/route";
-import { searchCouleurs } from "./routes/couleurs/search/route";
-import { findClosestCouleur } from "./routes/couleurs/find-closest/route";
-import { getCategories } from "./routes/couleurs/get-categories/route";
-import { register } from "./routes/auth/register/route";
-import { login } from "./routes/auth/login/route";
-import { logout } from "./routes/auth/logout/route";
-import { me } from "./routes/auth/me/route";
-import { updateProfile } from "./routes/auth/update-profile/route";
-import { addFavori } from "./routes/favoris/add/route";
-import { removeFavori } from "./routes/favoris/remove/route";
-import { listFavoris } from "./routes/favoris/list/route";
-import { uploadCSV } from "./routes/admin/upload-csv/route";
+import { createTRPCRouter } from "./create-context.js";
+import hiRoute from "./routes/example/hi/route.js";
+import { listCouleurs } from "./routes/couleurs/list/route.js";
+import { getCouleurById } from "./routes/couleurs/get-by-id/route.js";
+import { getCouleursByCategorie } from "./routes/couleurs/get-by-categorie/route.js";
+import { searchCouleurs } from "./routes/couleurs/search/route.js";
+import { findClosestCouleur } from "./routes/couleurs/find-closest/route.js";
+import { getCategories } from "./routes/couleurs/get-categories/route.js";
+import { register } from "./routes/auth/register/route.js";
+import { login } from "./routes/auth/login/route.js";
+import { logout } from "./routes/auth/logout/route.js";
+import { me } from "./routes/auth/me/route.js";
+import { updateProfile } from "./routes/auth/update-profile/route.js";
+import { addFavori } from "./routes/favoris/add/route.js";
+import { removeFavori } from "./routes/favoris/remove/route.js";
+import { listFavoris } from "./routes/favoris/list/route.js";
+import { uploadCSV } from "./routes/admin/upload-csv/route.js";
+
 
 export const appRouter = createTRPCRouter({
   example: createTRPCRouter({
