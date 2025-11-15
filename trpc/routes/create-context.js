@@ -1,8 +1,8 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 
-import { sessionsStorage } from "../storage/sessions-storage.js";
-import { usersStorage } from "../storage/users-storage.js";
+import { sessionsStorage } from "../../storage/sessions-storage.js";
+import { usersStorage } from "../../storage/users-storage.js";
 
 export const createContext = async ({ req }) => {
   const sessionId = req.headers.get("x-session-id") || "";
