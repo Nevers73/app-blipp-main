@@ -1,5 +1,4 @@
-// AUCUNE IMPORTATION — Node backend n'a pas accès aux alias Vue/React.
-// Ce fichier doit être du JavaScript pur.
+// AUCUNE IMPORTATION — fichier compatible Node.js pur
 
 export const couleursMock = [
   {

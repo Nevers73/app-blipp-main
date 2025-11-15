@@ -7,7 +7,7 @@ const GIST_RAW_URL =
 
 const GLOBAL_STORAGE_KEY = "__couleursCache__";
 
-// ⚠️ ICI : on enlève "backend"
+// chemin correct pour Render + ta structure
 const DATA_DIR = path.join(process.cwd(), "storage", "data");
 const DATA_FILE_PATH = path.join(DATA_DIR, "couleurs.json");
 
@@ -37,8 +37,7 @@ class CouleursStorage {
 
   loadFromGlobal() {
     const stored = globalScope[GLOBAL_STORAGE_KEY];
-    if (Array.isArray(stored)) return stored;
-    return null;
+    return Array.isArray(stored) ? stored : null;
   }
 
   saveToGlobal(couleurs) {
@@ -53,9 +52,7 @@ class CouleursStorage {
       if (this.isPermissionError(error)) {
         this.canPersist = false;
         this.saveToGlobal(this.couleurs);
-        console.warn(
-          "[CouleursStorage] File persistence disabled due to permission error"
-        );
+        console.warn("[CouleursStorage] File persistence disabled (mkdir)");
         return;
       }
       console.error("[CouleursStorage] Failed to ensure data directory", error);
@@ -65,27 +62,22 @@ class CouleursStorage {
 
   async loadFromFile() {
     if (!this.canPersist) return this.loadFromGlobal();
+
     try {
       const content = await fs.readFile(DATA_FILE_PATH, "utf-8");
       const parsed = JSON.parse(content);
-      if (Array.isArray(parsed)) return parsed;
-      console.warn(
-        "[CouleursStorage] Stored data is invalid, falling back to defaults"
-      );
-      return null;
+      return Array.isArray(parsed) ? parsed : null;
     } catch (error) {
       if (error.code === "ENOENT") {
-        console.log("[CouleursStorage] No existing storage file, using defaults");
+        console.log("[CouleursStorage] No local file found");
         return null;
       }
       if (this.isPermissionError(error)) {
         this.canPersist = false;
-        console.warn(
-          "[CouleursStorage] File persistence disabled due to permission error during read"
-        );
+        console.warn("[CouleursStorage] Persistence disabled (read)");
         return this.loadFromGlobal();
       }
-      console.error("[CouleursStorage] Failed to read storage file", error);
+      console.error("[CouleursStorage] Failed to read file", error);
       return null;
     }
   }
@@ -95,60 +87,56 @@ class CouleursStorage {
       this.saveToGlobal(couleurs);
       return;
     }
+
     await this.ensureDataDirectory();
-    if (!this.canPersist) {
-      this.saveToGlobal(couleurs);
-      return;
-    }
+
     try {
       await fs.writeFile(DATA_FILE_PATH, JSON.stringify(couleurs, null, 2), "utf-8");
-      console.log(`[CouleursStorage] Persisted ${couleurs.length} couleurs to file`);
+      console.log(`[CouleursStorage] Saved ${couleurs.length} couleurs`);
     } catch (error) {
       if (this.isPermissionError(error)) {
         this.canPersist = false;
         this.saveToGlobal(couleurs);
-        console.warn(
-          "[CouleursStorage] File persistence disabled due to permission error during write"
-        );
+        console.warn("[CouleursStorage] Persistence disabled (write)");
         return;
       }
-      console.error("[CouleursStorage] Failed to persist couleurs", error);
+      console.error("[CouleursStorage] Failed to write file", error);
       throw error;
     }
   }
 
   async fetchFromGist() {
     try {
-      console.log("[CouleursStorage] Fetching couleurs from Gist...");
+      console.log("[CouleursStorage] Fetching from Gist…");
       const response = await fetch(GIST_RAW_URL);
       const text = await response.text();
-      const lines = text.trim().split("\n");
-      const couleurs = lines.slice(1).map((line, index) => {
-        const values = line.split("\t");
+
+      const lines = text.trim().split("\n").slice(1);
+
+      return lines.map((line, index) => {
+        const v = line.split("\t");
         return {
           id: String(index + 1),
           numero: index + 1,
-          gouttesA: parseFloat(values[0]) || 0,
-          gouttesB: parseFloat(values[1]) || 0,
-          gouttesC: parseFloat(values[2]) || 0,
-          gouttesD: parseFloat(values[3]) || 0,
-          gouttesE: parseFloat(values[4]) || 0,
-          gouttesF: parseFloat(values[5]) || 0,
-          gouttesG: parseFloat(values[6]) || 0,
-          gouttesH: parseFloat(values[7]) || 0,
-          gouttesI: parseFloat(values[8]) || 0,
-          volume: parseFloat(values[9]) || 0,
-          L: parseFloat(values[10]) || 0,
-          A: parseFloat(values[11]) || 0,
-          B: parseFloat(values[12]) || 0,
-          hex: values[13] || "#000000",
-          nom: values[14] || "",
+          gouttesA: +v[0] || 0,
+          gouttesB: +v[1] || 0,
+          gouttesC: +v[2] || 0,
+          gouttesD: +v[3] || 0,
+          gouttesE: +v[4] || 0,
+          gouttesF: +v[5] || 0,
+          gouttesG: +v[6] || 0,
+          gouttesH: +v[7] || 0,
+          gouttesI: +v[8] || 0,
+          volume: +v[9] || 0,
+          L: +v[10] || 0,
+          A: +v[11] || 0,
+          B: +v[12] || 0,
+          hex: v[13] || "#000000",
+          nom: v[14] || "",
         };
       });
-      console.log(`[CouleursStorage] Fetched ${couleurs.length} couleurs from Gist`);
-      return couleurs;
-    } catch (error) {
-      console.error("[CouleursStorage] Failed to fetch from Gist:", error);
+    } catch (e) {
+      console.error("[CouleursStorage] Gist fetch failed", e);
       return null;
     }
   }
@@ -156,37 +144,30 @@ class CouleursStorage {
   async initialize() {
     if (this.initialized) return;
 
-    const gistCouleurs = await this.fetchFromGist();
-    if (gistCouleurs && gistCouleurs.length > 0) {
-      this.couleurs = gistCouleurs;
-      this.saveToGlobal(gistCouleurs);
-      await this.persist(gistCouleurs);
+    const gist = await this.fetchFromGist();
+    if (gist?.length) {
+      this.couleurs = gist;
+      this.saveToGlobal(gist);
+      await this.persist(gist);
       this.initialized = true;
-      console.log(
-        `[CouleursStorage] Initialized with ${gistCouleurs.length} couleurs from Gist`
-      );
       return;
     }
 
-    const globalStored = this.loadFromGlobal();
-    if (globalStored && globalStored.length > 0) {
-      this.couleurs = globalStored;
+    const cache = this.loadFromGlobal();
+    if (cache?.length) {
+      this.couleurs = cache;
       this.initialized = true;
-      console.log(
-        `[CouleursStorage] Loaded ${globalStored.length} couleurs from global cache`
-      );
       return;
     }
 
     await this.ensureDataDirectory();
-    const stored = await this.loadFromFile();
-    if (stored && stored.length > 0) {
-      this.couleurs = stored;
-      console.log(`[CouleursStorage] Loaded ${stored.length} couleurs from file`);
+    const file = await this.loadFromFile();
+    if (file?.length) {
+      this.couleurs = file;
     } else {
       await this.persist(this.couleurs);
-      console.log("[CouleursStorage] Initialized storage with default couleurs");
     }
+
     this.initialized = true;
   }
 
@@ -195,67 +176,56 @@ class CouleursStorage {
   }
 
   getById(id) {
-    return this.couleurs.find((c) => c.id === id);
+    return this.couleurs.find((x) => x.id === id);
   }
 
-  getByCategorie(categorie) {
-    return this.couleurs.filter((c) => c.categorie === categorie);
+  getByCategorie(cat) {
+    return this.couleurs.filter((x) => x.categorie === cat);
   }
 
   search(query) {
-    const lowercaseQuery = query.toLowerCase();
+    const q = query.toLowerCase();
     return this.couleurs.filter(
       (c) =>
-        c.nom.toLowerCase().includes(lowercaseQuery) ||
-        c.hex.toLowerCase().includes(lowercaseQuery) ||
-        c.categorie.toLowerCase().includes(lowercaseQuery)
+        c.nom.toLowerCase().includes(q) ||
+        c.hex.toLowerCase().includes(q) ||
+        c.categorie.toLowerCase().includes(q)
     );
   }
 
   findClosestByHex(targetHex) {
-    if (this.couleurs.length === 0) return null;
+    if (!this.couleurs.length) return null;
 
-    const hexToRgb = (hex) => {
-      const cleaned = hex.replace("#", "");
+    const hexToRgb = (h) => {
+      h = h.replace("#", "");
       return {
-        r: parseInt(cleaned.substring(0, 2), 16),
-        g: parseInt(cleaned.substring(2, 4), 16),
-        b: parseInt(cleaned.substring(4, 6), 16),
+        r: parseInt(h.slice(0, 2), 16),
+        g: parseInt(h.slice(2, 4), 16),
+        b: parseInt(h.slice(4, 6), 16),
       };
     };
 
-    const colorDistance = (hex1, hex2) => {
-      const rgb1 = hexToRgb(hex1);
-      const rgb2 = hexToRgb(hex2);
+    const dist = (h1, h2) => {
+      const a = hexToRgb(h1);
+      const b = hexToRgb(h2);
       return Math.sqrt(
-        Math.pow(rgb1.r - rgb2.r, 2) +
-          Math.pow(rgb1.g - rgb2.g, 2) +
-          Math.pow(rgb1.b - rgb2.b, 2)
+        (a.r - b.r) ** 2 + (a.g - b.g) ** 2 + (a.b - b.b) ** 2
       );
     };
 
-    let closest = this.couleurs[0];
-    let minDistance = colorDistance(targetHex, closest.hex);
-    for (let i = 1; i < this.couleurs.length; i++) {
-      const distance = colorDistance(targetHex, this.couleurs[i].hex);
-      if (distance < minDistance) {
-        minDistance = distance;
-        closest = this.couleurs[i];
-      }
-    }
-    return closest;
+    return this.couleurs.reduce((min, c) =>
+      dist(c.hex, targetHex) < dist(min.hex, targetHex) ? c : min
+    );
   }
 
   async replaceAll(newCouleurs) {
     this.couleurs = newCouleurs;
     this.saveToGlobal(newCouleurs);
-    console.log(`Couleurs storage updated with ${newCouleurs.length} items`);
     await this.persist(newCouleurs);
   }
 
   getCategories() {
-    const categories = new Set(this.couleurs.map((c) => c.categorie));
-    return Array.from(categories).sort();
+    return [...new Set(this.couleurs.map((c) => c.categorie))].sort();
   }
 }
 
